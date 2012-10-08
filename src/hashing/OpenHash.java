@@ -6,9 +6,11 @@ import java.util.*;
 public class OpenHash<K, V> implements SimpleMap<K, V>{
 	private ArrayList<LinkedList<Tuple<K, V>>> data; 
 	private int hashTableSize;
+	private int size;
 	
 	public OpenHash(){
 		this.hashTableSize = 4;
+		this.size = 0;
 		initializeData();
 	}
 	
@@ -35,13 +37,28 @@ public class OpenHash<K, V> implements SimpleMap<K, V>{
 		V getSecond(){
 			return second;
 		}
+		
+		void setSecond(V second){
+			this.second = second;
+		}
 	}
 	
 	@Override
 	public void put(K key, V value) {
 		int position = hashTablePosition(key.hashCode()); 
 		
-		data.get(position).add(new Tuple(key, value));
+		Iterator<Tuple<K, V>> it = data.get(position).iterator();
+		while (it.hasNext()){
+			Tuple<K, V> tuple = it.next();
+			
+			if (tuple.getFirst().equals(key)){
+				tuple.setSecond(value);
+				return;
+			}
+		}
+		
+		data.get(position).add(new Tuple<K, V>(key, value));
+		size++;
 	}
 	
 	private int  hashTablePosition(int hashCode){
@@ -52,42 +69,59 @@ public class OpenHash<K, V> implements SimpleMap<K, V>{
 	public V get(K key) {
 		int position = hashTablePosition(key.hashCode());
 		
-		if (data.get(position) == null){
-			return null;
-		}
-		
 		Iterator<Tuple<K, V>> it = data.get(position).iterator();
 		while (it.hasNext()){
 			Tuple<K, V> tuple = it.next();
+			
 			if (tuple.getFirst().equals(key)){
 				return tuple.getSecond();
 			}
 		}
 		return null;
 	}
-
+	
 	@Override
 	public void remove(K key) {
-		// TODO Auto-generated method stub
+		int position = hashTablePosition(key.hashCode());
 		
+		Iterator<Tuple<K, V>> it = data.get(position).iterator();
+		while (it.hasNext()){
+			if (it.next().getFirst().equals(key)){
+				it.remove();
+			}
+		}
 	}
+
+
 
 	@Override
 	public Set<K> keySet() {
-		// TODO Auto-generated method stub
-		return null;
+		Set<K> keys = new HashSet<K>();
+		for (LinkedList<Tuple<K, V>> list : data){
+			for (Tuple<K, V> tuple: list){
+				keys.add(tuple.getFirst());
+			}
+		}
+		
+		return keys;
 	}
 
 	@Override
 	public Collection<V> values() {
-		// TODO Auto-generated method stub
-		return null;
+		Collection<V> values = new LinkedList<V>();
+		for (LinkedList<Tuple<K, V>> list : data){
+			for (Tuple<K, V> tuple: list){
+				values.add(tuple.getSecond());
+			}
+		}
+		
+		return values;
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return size;
 	}
+	
 
 }
